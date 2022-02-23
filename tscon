@@ -1,0 +1,127 @@
+#!/bin/bash
+
+# Program: Extended Ping
+# Author: Maxwell Nana Forson <nanaforsonjnr@gmail.com>
+	# </>theLazyProgrammer^_^
+# A simple bash script to emulate the ping command with some friendliness
+# This was actually inspired by Cisco's extended ping feature. Thought I might
+# script a lazy man's version out of it. Feel free to use and share as well contributing.
+
+# set default ping count here.
+def_ping_count=4
+
+function welcome_screen {
+	clear
+	echo "EXTENDED PING"
+	echo "============="
+	echo "Default ping count is $def_ping_count, but can be changed"
+	echo "NB: Name resolution is not used to enhance pinging experience"
+
+	get_active_ifaces
+}
+
+function get_active_ifaces {
+	# uses the Network Manager CLI to retrieve all active interface (Interfaces in up/up state and configured with an IP address). An array or list is created from the output
+	active_interfaces=($(nmcli con show --active | tr -s " " | grep -v "DEVICE" | awk '{print $4}'))
+
+	get_dst_addr
+}
+
+
+function get_dst_addr {
+	# get the destination IP address
+	echo ""
+	echo -n "Enter destination network address (IP or DNS name): "
+	read dst_net
+
+	# exit if no network address is given.
+	if [ ! $dst_net ]; then
+		echo ""
+		echo "No destination network received"
+		echo "Exiting..."
+
+		exit
+	else
+		# get ready to rumble
+		display_active_interfaces
+		perform_connection_test
+
+	fi
+}
+
+
+function display_active_interfaces {
+	echo ""
+	echo "ACTIVE INTERFACES"
+	echo "================="
+
+	# loop through interfaces and display them to user for selection
+	iface_num=0
+	for _ in ${active_interfaces[@]}; do
+		echo "$(expr $iface_num + 1). ${active_interfaces[iface_num]}"
+		iface_num=$(expr $iface_num + 1)
+	done
+
+	# get user preferred source interface for ping
+	get_src_interface
+}
+
+
+function get_src_interface {
+	# get the source interface for the ping
+	echo ""
+	echo -n "Which interface do you want to ping from? (Enter for Default): "
+	read src_interface
+
+	get_ping_count
+}
+
+function get_ping_count {
+	# ask user the number of ICMP to send
+	echo ""
+	echo "Number of ICMP packets to send"
+	echo -n "(Type 0 for continous ping or Enter for Default): "
+	read ping_count
+}
+
+function cont_ping_warn {
+	echo "WARNING: You are using Continous pings."
+	echo "Use the break sequence to exit"
+	echo ""
+}
+
+function perform_connection_test {
+	if [ $src_interface ]; then
+		echo ""
+		if [ $ping_count -eq 0 2> /dev/null ]; then # continous ping
+			cont_ping_warn
+			ping -n $dst_net -I ${active_interfaces[$(expr $src_interface - 1)]}
+
+		elif [ $ping_count -ne 0 2> /dev/null ]; then
+			ping -nc $ping_count $dst_net -I ${active_interfaces[$(expr $src_interface - 1)]}
+		else
+			ping -nc $def_ping_count $dst_net -I ${active_interfaces[$(expr $src_interface - 1)]}
+		fi
+	
+	# default pinging behavior, uses default outgoing interface
+	elif [ $dst_net ]; then
+		echo ""
+		if [ $ping_count -eq 0 2> /dev/null ]; then # continous ping
+			cont_ping_warn
+			ping -n $dst_net
+		elif [ $ping_count -ne 0 2> /dev/null ]; then
+			ping -nc $ping_count $dst_net
+		else
+			ping -nc $def_ping_count $dst_net
+		fi
+	fi
+}
+
+
+function run_ext_ping {
+	welcome_screen
+}
+
+
+# run program
+run_ext_ping
