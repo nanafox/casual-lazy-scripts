@@ -1,1 +1,1 @@
-# causual-lazy-scripts
+# casual-lazy-scripts
