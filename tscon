@@ -118,19 +118,17 @@ function continous_ping_warning {
 function perform_connection_test {
 	# performs ping with the interface specified by the user
 	if [ $src_interface ]; then
-		continous_ping_warning
-
 		if [ $ping_count -eq 0 2> /dev/null ]; then
 			# ping continously
 			# check if more parameters were received (i.e. Packet size and TTL value)
-			
+			continuous_ping_warn
 			if [ ! -z $packet_size -a ! -z $ttl_value 2> /dev/null ]; then 
 				# both TTL and packet size injected into ping
-				ping -n $dst_net -s $packet_size -t $ttl_value -I ${active_interfaces[$(expr $src_interface - 1)]}
+				ping -n $dst_net -M dont -s $packet_size -t $ttl_value -I ${active_interfaces[$(expr $src_interface - 1)]}
 			
 			elif [ $packet_size ]; then
 				# packet size injected into ping
-				ping -n $dst_net -s $packet_size -I ${active_interfaces[$(expr $src_interface - 1)]}
+				ping -n $dst_net -M dont -s $packet_size -I ${active_interfaces[$(expr $src_interface - 1)]}
 			
 			elif [ $ttl_value ]; then
 				# TTL value injected into ping
@@ -145,11 +143,11 @@ function perform_connection_test {
 			
 			if [ ! -z $packet_size -a ! -z $ttl_value 2> /dev/null ]; then 
 				# both TTL and packet size injected into ping
-				ping -nc $ping_count $dst_net -s $packet_size -t $ttl_value -I ${active_interfaces[$(expr $src_interface - 1)]}
+				ping -nc $ping_count $dst_net -M dont -s $packet_size -t $ttl_value -I ${active_interfaces[$(expr $src_interface - 1)]}
 			
 			elif [ $packet_size ]; then
 				# packet size injected into ping
-				ping -nc $ping_count $dst_net -s $packet_size -I ${active_interfaces[$(expr $src_interface - 1)]}
+				ping -nc $ping_count $dst_net -M dont -s $packet_size -I ${active_interfaces[$(expr $src_interface - 1)]}
 			
 			elif [ $ttl_value ]; then
 				# TTL value injected into ping
@@ -166,11 +164,11 @@ function perform_connection_test {
 			
 			if [ ! -z $packet_size -a ! -z $ttl_value 2> /dev/null ]; then 
 				# both TTL and packet size injected into ping
-				ping -nc $ping_count $dst_net -s $packet_size -t $ttl_value -I ${active_interfaces[$(expr $src_interface - 1)]}
+				ping -nc $ping_count $dst_net -M dont -s $packet_size -t $ttl_value -I ${active_interfaces[$(expr $src_interface - 1)]}
 			
 			elif [ $packet_size ]; then
 				# packet size injected into ping
-				ping -nc $ping_count $dst_net -s $packet_size -I ${active_interfaces[$(expr $src_interface - 1)]}
+				ping -nc $ping_count $dst_net -M dont -s $packet_size -I ${active_interfaces[$(expr $src_interface - 1)]}
 			
 			elif [ $ttl_value ]; then
 				# TTL value injected into ping
@@ -190,12 +188,12 @@ function perform_connection_test {
 			continous_ping_warning
 			
 			if [ ! -z $packet_size -a ! -z $ttl_value 2> /dev/null ]; then 
-				# both TTL and packet size injected into ping
-				ping -n $dst_net -s $packet_size -t $ttl_value
+				# both TTL value and packet size injected into ping
+				ping -n $dst_net -M dont -s $packet_size -t $ttl_value
 			
 			elif [ $packet_size ]; then
 				# packet size injected into ping
-				ping -n $dst_net -s $packet_size
+				ping -n $dst_net -M dont -s $packet_size
 			
 			elif [ $ttl_value ]; then
 				# TTL value injected into ping
@@ -208,7 +206,7 @@ function perform_connection_test {
 		elif [ $ping_count -ne 0 2> /dev/null ]; then
 			# use specified ping count
 			if [ ! -z $packet_size -a ! -z $ttl_value 2> /dev/null ]; then 
-				# both TTL and packet size injected into ping
+				# both TTL value and packet size injected into ping
 				ping -nc $ping_count $dst_net -s $packet_size -t $ttl_value
 			
 			elif [ $packet_size ]; then
@@ -227,7 +225,7 @@ function perform_connection_test {
 		else
 			# use default ping count
 			if [ ! -z $packet_size -a ! -z $ttl_value 2> /dev/null ]; then 
-				# both TTL and packet size injected into ping
+				# both TTL value and packet size injected into ping
 				ping -nc $DEFAULT_PING_COUNT $dst_net -s $packet_size -t $ttl_value
 			
 			elif [ $packet_size ]; then
@@ -254,11 +252,3 @@ function run_ext_ping {
 
 # run program
 run_ext_ping
-
-
-# TODO: If possible, find a way to streamline code
-# TODO: notable repititions may be cropping, find a way to deal with it
-	# notable is the IF statements after adding checks for the TTL value and packet size fields
-	# currently, this is my best shot. Maybe when next I'm lazy, the inspiration will reveal itself
-	# apart from that it works perfectly. I couldn't think a good catch all function to wrap this into
-	# Should this continue to be true, I might have to stick with this. After all, it works just fine.
