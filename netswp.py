@@ -17,15 +17,14 @@ net_parser = argparse.ArgumentParser(prog='netswp',
                                      allow_abbrev=True,
                                      prefix_chars='/-',
                                      )
-net_parser.add_argument('--network', '-n',
+net_parser.add_argument('--network', '-n', '/n',
                         help='target network address (required)',
                         metavar='<network_address>',
-                        required=True,
-
+                        required=True
                         )
 # the interface paramter is not available if system is Windows-based
 if not sys.platform.startswith('win'):    
-    net_parser.add_argument('--interface', '-i', '/i',
+    net_parser.add_argument('--interface', '-i',
                             help='specify interface to listen on (default: best interface)',
                             metavar='<interface>'
                             )
@@ -86,11 +85,10 @@ def win_os_ping_sweep(network_address):
                 (ip_address == network.network_address):
             continue
         try:
-            # use user specified interface if received on the CLI
             output = None
             if ping_sweep.interface:
                 output = subprocess.Popen(
-                    f'ping /n 1 {ip_address} -I {ping_sweep.interface} /w 1'.split(),
+                    f'ping /n 1 {ip_address} /w 1'.split(),
                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
                 ).communicate()[0]
 
@@ -169,7 +167,7 @@ else:
                 print('[!] Below are the list of available interface on this system')
                 for iface in netifaces.interfaces():
                     print(f'\t[+] {iface}')
-                quit(3)
+                quit()
 
         except NameError:
             interface = None
@@ -178,7 +176,7 @@ else:
         if sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
             linux_os_ping_sweep(network_address=network)
 
-        # windows systems    
+        # windows systems
         if sys.platform.startswith('win'):
             win_os_ping_sweep(network_address=network)
 
