@@ -9,7 +9,8 @@ import argparse
 import ipaddress
 import subprocess
 import sys
-import netifaces
+if not sys.platform.startswith('win'):
+    import netifaces
 
 # CLI arguments, more to come...
 net_parser = argparse.ArgumentParser(prog='netswp',
@@ -22,7 +23,7 @@ net_parser.add_argument('--network', '-n', '/n',
                         metavar='<network_address>',
                         required=True
                         )
-# the interface paramter is not available if system is Windows-based
+# the interface parameter is not available if system is Windows-based
 if not sys.platform.startswith('win'):    
     net_parser.add_argument('--interface', '-i',
                             help='specify interface to listen on (default: best interface)',
@@ -108,13 +109,15 @@ def connection_info(output):
     global total_ip_addresses
     global active_ip_addresses
     global inactive_ip_addresses
+    ip_address = None
+
     try:
         if sys.platform.startswith('linux'):    
             ip_address = output.split()[1]
         elif sys.platform.startswith('win'):
             ip_address = output.split()[2].replace(':', '')
     except IndexError:
-        # the only time the output is empty is when an IPv6 network in unreachable
+        # the only time the output is empty is when an IP network in unreachable
         # therefore, no elements are available in the list
         print('[!] Network is unreachable')
         quit()
@@ -189,7 +192,7 @@ else:
             subprocess.call('clear')
         elif sys.platform.startswith('win'):
             subprocess.call('cls')
-        print(f'[-] Not accepted or implemented!')
+        print('[-] Not accepted or implemented!')
         print('[-] Specify a valid network address to proceed')
         quit()
 
